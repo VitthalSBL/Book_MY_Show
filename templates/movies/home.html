@@ -19,10 +19,12 @@
                 <a href="{{ m.get_absolute_url }}" class="text-decoration-none text-dark">
                     <div class="card movie-card">
                         <div class="poster-wrap">
-                            {% if m.poster_display %}
-                            <img src="{{ m.poster_display }}" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e">
+                            {% if m.poster_url %}
+                                <img src="{{ m.poster_url }}" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e">
+                            {% elif m.poster %}
+                                <img src="{{ m.poster.url }}" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e">
                             {% else %}
-                            <div class="poster-placeholder">{{ m.title }}</div>
+                                <img src="https://via.placeholder.com/400x600?text=No+Poster" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e">
                             {% endif %}
                         </div>
                         <div class="card-body-movie">
@@ -48,10 +50,12 @@
             <a href="{{ m.get_absolute_url }}" class="text-decoration-none text-dark">
                 <div class="card movie-card">
                     <div class="poster-wrap">
-                        {% if m.poster_display %}
-                        <img src="{{ m.poster_display }}" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e">
+                        {% if m.poster_url %}
+                            <img src="{{ m.poster_url }}" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e">
+                        {% elif m.poster %}
+                            <img src="{{ m.poster.url }}" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e">
                         {% else %}
-                        <div class="poster-placeholder">{{ m.title }}</div>
+                            <img src="https://via.placeholder.com/400x600?text=No+Poster" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e">
                         {% endif %}
                     </div>
                     <div class="card-body-movie">
@@ -83,10 +87,12 @@
             <a href="{{ m.get_absolute_url }}" class="text-decoration-none text-dark">
                 <div class="card movie-card">
                     <div class="poster-wrap">
-                        {% if m.poster_display %}
-                        <img src="{{ m.poster_display }}" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e" style="height:200px">
+                        {% if m.poster_url %}
+                            <img src="{{ m.poster_url }}" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e; height:200px">
+                        {% elif m.poster %}
+                            <img src="{{ m.poster.url }}" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e; height:200px">
                         {% else %}
-                        <div class="poster-placeholder" style="height:200px">{{ m.title }}</div>
+                            <img src="https://via.placeholder.com/400x600?text=No+Poster" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e; height:200px">
                         {% endif %}
                     </div>
                     <div class="card-body-movie py-2">
