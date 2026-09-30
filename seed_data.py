@@ -115,10 +115,10 @@ def download_real_poster(title):
     if not fname:
         return None
     url = 'https://en.wikipedia.org/wiki/Special:FilePath/' + urllib.parse.quote(fname)
-    headers = {'User-Agent': 'BookMyShowClone/1.0 (Educational Django Project)'}
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) BookMyShowClone/1.0'}
     try:
         req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        with urllib.request.urlopen(req, timeout=8) as resp:
             data = resp.read()
             if len(data) < 5000:
                 return None
