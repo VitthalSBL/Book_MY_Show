@@ -1,16 +1,18 @@
-"""
-Django settings for BookMyShow Clone - Production Ready
-"""
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Load environment variables from .env file
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-bookmyshow-clone-change-in-production-xyz123')
+# SECRET_KEY setup with a safe local fallback
+SECRET_KEY = os.getenv('SECRET_KEY', '@_m4t5bk2f&gfnow(r*^6pg-yttvsaw+e@dr!v#386=$43_w09')
+
+# DEBUG mode (defaults to True if not specified in .env)
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
+
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver,.onrender.com').split(',')
 
 INSTALLED_APPS = [
@@ -93,7 +95,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Static files storage condition for dev and production
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
