@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% block title %}Select Seats — {{ show.movie.title }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0 small">
+            <li class="breadcrumb-item"><a href="{% url 'movies:home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ show.movie.get_absolute_url }}">{{ show.movie.title }}</a></li>
+            <li class="breadcrumb-item active">Select Seats</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm" style="border-radius:12px">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-1">{{ show.movie.title }}</h5>
+                    <p class="text-muted small mb-1">
+                        <i class="bi bi-building me-1"></i>{{ show.screen.theater.name }} · {{ show.screen.name }}
+                    </p>
+                    <p class="text-muted small mb-3">
+                        <i class="bi bi-clock me-1"></i>{{ show.datetime_display }}
+                        {% if show.language %} · {{ show.language.name }}{% endif %}
+                        · From ₹{{ show.base_price }}
+                    </p>
+
+                    <div class="screen-label">Screen this way</div>
+
+                    <div class="text-center mb-3 overflow-auto">
+                        {% for row, seats in seat_map.items %}
+                        <div class="d-flex justify-content-center align-items-center mb-1">
+                            <span class="me-2 text-muted fw-bold" style="width:18px;font-size:11px">{{ row }}</span>
+                            {% for seat in seats %}
+                            <div class="seat {{ seat.status }}{% if seat.type == 'premium' or seat.type == 'recliner' %} premium{% endif %}"
+                                 data-id="{{ seat.id }}" data-label="{{ seat.label }}" data-price="{{ seat.price }}"
+                                 data-status="{{ seat.status }}" title="{{ seat.label }} — ₹{{ seat.price }}">
+                                {{ seat.number }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-center flex-wrap gap-3 mt-4 small">
+                        <span class="d-flex align-items-center gap-1"><span class="seat available" style="width:18px;height:18px;margin:0"></span> Available</span>
+                        <span class="d-flex align-items-center gap-1"><span class="seat selected" style="width:18px;height:18px;margin:0"></span> Selected</span>
+                        <span class="d-flex align-items-center gap-1"><span class="seat booked" style="width:18px;height:18px;margin:0"></span> Sold</span>
+                        <span class="d-flex align-items-center gap-1"><span class="seat held_by_me" style="width:18px;height:18px;margin:0"></span> Your hold</span>
+                        <span class="d-flex align-items-center gap-1"><span class="seat available premium" style="width:18px;height:18px;margin:0"></span> Premium</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card summary-card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">Booking Summary</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Seats</span>
+                        <span id="selected-labels" class="fw-semibold text-end" style="max-width:60%">None</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Count</span>
+                        <span id="selected-count" class="fw-semibold">0</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="fw-bold">Total</span>
+                        <span class="fw-bold text-danger fs-5">₹<span id="selected-total">0</span></span>
+                    </div>
+                    <div id="timer-box" class="alert alert-warning d-none py-2 small">
+                        <i class="bi bi-clock-history me-1"></i> Hold expires in <strong id="timer">2:00</strong>
+                    </div>
+                    {% if user.is_authenticated %}
+                    <button id="btn-proceed" class="btn btn-bms w-100 py-2" disabled>
+                        <i class="bi bi-lock-fill me-1"></i> Proceed to Pay
+                    </button>
+                    {% else %}
+                    <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-bms w-100 py-2">
+                        Login to Book
+                    </a>
+                    {% endif %}
+                    <div id="error-msg" class="text-danger small mt-2 text-center"></div>
+                    <p class="text-muted small text-center mt-3 mb-0">Max 10 seats · Held for 2 minutes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const SHOW_ID = {{ show.id }};
+const CSRF = '{{ csrf_token }}';
+let selected = new Set();
+
+document.querySelectorAll('.seat.available, .seat.held_by_me').forEach(el => {
+    el.addEventListener('click', () => {
+        if (el.dataset.status === 'booked' || el.dataset.status === 'held') return;
+        const id = el.dataset.id;
+        if (selected.has(id)) {
+            selected.delete(id);
+            el.classList.remove('selected');
+            el.classList.add(el.dataset.status === 'held_by_me' ? 'held_by_me' : 'available');
+        } else {
+            if (selected.size >= 10) { alert('Maximum 10 seats allowed'); return; }
+            selected.add(id);
+            el.classList.remove('available', 'held_by_me');
+            el.classList.add('selected');
+        }
+        updateSummary();
+    });
+});
+
+function updateSummary() {
+    const labels = [], prices = [];
+    selected.forEach(id => {
+        const el = document.querySelector('.seat[data-id="'+id+'"]');
+        if (el) { labels.push(el.dataset.label); prices.push(parseFloat(el.dataset.price)); }
+    });
+    document.getElementById('selected-labels').textContent = labels.length ? labels.join(', ') : 'None';
+    document.getElementById('selected-count').textContent = labels.length;
+    document.getElementById('selected-total').textContent = prices.reduce((a,b)=>a+b,0).toFixed(2);
+    const btn = document.getElementById('btn-proceed');
+    if (btn) btn.disabled = labels.length === 0;
+}
+
+document.getElementById('btn-proceed')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btn-proceed');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Holding seats...';
+    document.getElementById('error-msg').textContent = '';
+    try {
+        const res = await fetch('{% url "bookings:hold_seats" %}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+            body: JSON.stringify({show_id: SHOW_ID, seat_ids: Array.from(selected).map(Number)})
+        });
+        const data = await res.json();
+        if (data.success) {
+            window.location.href = data.redirect_url;
+        } else {
+            document.getElementById('error-msg').textContent = data.error || 'Failed to hold seats';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-lock-fill me-1"></i> Proceed to Pay';
+            pollSeats();
+        }
+    } catch(e) {
+        document.getElementById('error-msg').textContent = 'Network error. Please try again.';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-lock-fill me-1"></i> Proceed to Pay';
+    }
+});
+
+async function pollSeats() {
+    try {
+        const res = await fetch('/theaters/api/seats/' + SHOW_ID + '/');
+        const data = await res.json();
+        for (const [id, status] of Object.entries(data.seats)) {
+            const el = document.querySelector('.seat[data-id="'+id+'"]');
+            if (!el || selected.has(id)) continue;
+            el.className = 'seat ' + status + (el.classList.contains('premium') ? ' premium' : '');
+            el.dataset.status = status;
+        }
+    } catch(e) {}
+}
+setInterval(pollSeats, 5000);
+</script>
+{% endblock %}

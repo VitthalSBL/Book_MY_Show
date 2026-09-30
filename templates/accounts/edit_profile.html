@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Edit Profile{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:500px">
+    <h4>Edit Profile</h4>
+    <form method="post">{% csrf_token %}
+        <div class="mb-3"><label class="form-label">First Name</label><input name="first_name" class="form-control" value="{{ user.first_name }}"></div>
+        <div class="mb-3"><label class="form-label">Last Name</label><input name="last_name" class="form-control" value="{{ user.last_name }}"></div>
+        <div class="mb-3"><label class="form-label">Email</label><input name="email" type="email" class="form-control" value="{{ user.email }}"></div>
+        <div class="mb-3"><label class="form-label">Phone</label><input name="phone" class="form-control" value="{{ profile.phone }}"></div>
+        <button class="btn btn-bms">Save</button>
+    </form>
+</div>
+{% endblock %}

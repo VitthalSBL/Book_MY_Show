@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:600px">
+    <h4>My Profile</h4>
+    <div class="card"><div class="card-body">
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Name:</strong> {{ user.get_full_name|default:"-" }}</p>
+        <p><strong>Email:</strong> {{ user.email|default:"-" }}</p>
+        <p><strong>Phone:</strong> {{ profile.phone|default:"-" }}</p>
+        <a href="{% url 'accounts:edit_profile' %}" class="btn btn-bms btn-sm">Edit Profile</a>
+    </div></div>
+</div>
+{% endblock %}

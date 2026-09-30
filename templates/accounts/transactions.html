@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Transactions{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h4>Transaction History</h4>
+    <table class="table table-sm bg-white">
+        <thead><tr><th>Payment ID</th><th>Movie</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>
+        {% for p in payments %}
+        <tr>
+            <td>{{ p.payment_id }}</td>
+            <td>{{ p.booking.show.movie.title }}</td>
+            <td>₹{{ p.amount }}</td>
+            <td><span class="badge bg-{% if p.status == 'captured' %}success{% else %}secondary{% endif %}">{{ p.status }}</span></td>
+            <td>{{ p.created_at|date:"d M Y" }}</td>
+        </tr>
+        {% empty %}<tr><td colspan="5" class="text-muted">No transactions.</td></tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

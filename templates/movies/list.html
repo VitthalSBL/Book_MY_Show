@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}Movies — BookMyShow{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div class="card filter-card">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-funnel me-1"></i> Filters</h6>
+                    <form method="get">
+                        <div class="mb-3">
+                            <label class="form-label">Search</label>
+                            <input type="text" name="q" class="form-control" value="{{ current_filters.q }}" placeholder="Movie name...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Genre</label>
+                            <select name="genre" class="form-select">
+                                <option value="">All Genres</option>
+                                {% for g in genres %}
+                                <option value="{{ g.slug }}" {% if current_filters.genre == g.slug %}selected{% endif %}>{{ g.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Language</label>
+                            <select name="language" class="form-select">
+                                <option value="">All Languages</option>
+                                {% for l in languages %}
+                                <option value="{{ l.code }}" {% if current_filters.language == l.code %}selected{% endif %}>{{ l.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="">All</option>
+                                <option value="now_showing" {% if current_filters.status == 'now_showing' %}selected{% endif %}>Now Showing</option>
+                                <option value="upcoming" {% if current_filters.status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Min Rating</label>
+                            <select name="rating" class="form-select">
+                                <option value="">Any</option>
+                                <option value="4" {% if current_filters.rating == '4' %}selected{% endif %}>4+ Stars</option>
+                                <option value="3" {% if current_filters.rating == '3' %}selected{% endif %}>3+ Stars</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Sort By</label>
+                            <select name="sort" class="form-select">
+                                <option value="-release_date">Newest First</option>
+                                <option value="-average_rating">Top Rated</option>
+                                <option value="title">Name A-Z</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-bms w-100">Apply Filters</button>
+                        <a href="{% url 'movies:list' %}" class="btn btn-link btn-sm w-100 mt-1 text-muted">Clear all</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0">{{ movies.paginator.count }} Movies</h4>
+            </div>
+            <div class="row g-3">
+                {% for m in movies %}
+                <div class="col-6 col-md-4">
+                    <a href="{{ m.get_absolute_url }}" class="text-decoration-none text-dark">
+                        <div class="card movie-card h-100">
+                            <div class="poster-wrap">
+                                {% if m.poster_display %}
+                                <img src="{{ m.poster_display }}" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e">
+                                {% else %}
+                                <div class="poster-placeholder">{{ m.title }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="card-body-movie">
+                                <h6 class="text-truncate">{{ m.title }}</h6>
+                                <span class="badge-rating"><i class="bi bi-star-fill"></i> {{ m.average_rating }}</span>
+                                <div class="genre-tag text-truncate mt-1">{{ m.genres.all|join:", " }}</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5 text-muted">
+                    <i class="bi bi-search fs-1 d-block mb-2"></i>
+                    No movies match your filters.
+                </div>
+                {% endfor %}
+            </div>
+            {% if movies.has_other_pages %}
+            <nav class="mt-4 d-flex justify-content-center">
+                <ul class="pagination">
+                    {% if movies.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ movies.previous_page_number }}&{{ request.GET.urlencode }}">&laquo;</a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">{{ movies.number }} / {{ movies.paginator.num_pages }}</span></li>
+                    {% if movies.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ movies.next_page_number }}&{{ request.GET.urlencode }}">&raquo;</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

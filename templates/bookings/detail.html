@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Booking {{ booking.booking_id }}{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:600px">
+    <div class="card"><div class="card-body">
+        <h4>Booking {{ booking.booking_id }}</h4>
+        <p><span class="badge bg-{% if booking.status == 'confirmed' %}success{% else %}secondary{% endif %}">{{ booking.status }}</span></p>
+        <p><strong>Movie:</strong> {{ booking.show.movie.title }}</p>
+        <p><strong>Theater:</strong> {{ booking.show.screen.theater.name }} ({{ booking.show.screen.name }})</p>
+        <p><strong>Show:</strong> {{ booking.show.datetime_display }}</p>
+        <p><strong>Seats:</strong> {% for r in booking.seat_reservations.all %}{{ r.seat.seat_label }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+        <p><strong>Amount:</strong> ₹{{ booking.total_amount }}</p>
+        {% if booking.status == 'confirmed' %}
+        <a href="{% url 'bookings:download_ticket' booking.booking_id %}" class="btn btn-bms">Download PDF Ticket</a>
+        {% endif %}
+    </div></div>
+</div>
+{% endblock %}

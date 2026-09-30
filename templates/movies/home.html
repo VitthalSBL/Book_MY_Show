@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}BookMyShow — Book Movie Tickets Online{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="container position-relative" style="z-index:1">
+        <h1>Movies that move you</h1>
+        <p>Discover the latest blockbusters, book seats in real-time, and get instant e-tickets.</p>
+        <a href="{% url 'movies:list' %}" class="btn btn-bms mt-2"><i class="bi bi-play-circle me-1"></i> Browse Movies</a>
+    </div>
+</section>
+
+<div class="container pb-5">
+    {% if trending %}
+    <div class="fade-up">
+        <h2 class="section-title"><i class="bi bi-fire icon"></i> Trending Now</h2>
+        <div class="row g-3 mb-5">
+            {% for m in trending %}
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{{ m.get_absolute_url }}" class="text-decoration-none text-dark">
+                    <div class="card movie-card">
+                        <div class="poster-wrap">
+                            {% if m.poster_display %}
+                            <img src="{{ m.poster_display }}" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e">
+                            {% else %}
+                            <div class="poster-placeholder">{{ m.title }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="card-body-movie">
+                            <h6 class="text-truncate">{{ m.title }}</h6>
+                            <span class="badge-rating"><i class="bi bi-star-fill"></i> {{ m.average_rating }}</span>
+                            <span class="badge-cert ms-1">{{ m.certification }}</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="section-title mb-0"><i class="bi bi-camera-reels icon"></i> Now Showing</h2>
+        <a href="{% url 'movies:list' %}?status=now_showing" class="btn btn-outline-bms btn-sm">See All</a>
+    </div>
+    <div class="row g-3 mb-5">
+        {% for m in now_showing %}
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{{ m.get_absolute_url }}" class="text-decoration-none text-dark">
+                <div class="card movie-card">
+                    <div class="poster-wrap">
+                        {% if m.poster_display %}
+                        <img src="{{ m.poster_display }}" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e">
+                        {% else %}
+                        <div class="poster-placeholder">{{ m.title }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body-movie">
+                        <h6 class="text-truncate">{{ m.title }}</h6>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge-rating"><i class="bi bi-star-fill"></i> {{ m.average_rating }}</span>
+                            <small class="text-muted">{{ m.duration_display }}</small>
+                        </div>
+                        <div class="genre-tag text-truncate">{{ m.genres.all|join:", " }}</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-light text-center py-5">
+                <i class="bi bi-film fs-1 text-muted d-block mb-2"></i>
+                No movies showing right now. Run <code>python seed_data.py</code> to add sample data.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if upcoming %}
+    <h2 class="section-title"><i class="bi bi-calendar-event icon"></i> Coming Soon</h2>
+    <div class="row g-3">
+        {% for m in upcoming %}
+        <div class="col-6 col-md-3 col-lg-2">
+            <a href="{{ m.get_absolute_url }}" class="text-decoration-none text-dark">
+                <div class="card movie-card">
+                    <div class="poster-wrap">
+                        {% if m.poster_display %}
+                        <img src="{{ m.poster_display }}" class="poster" alt="{{ m.title }}" loading="lazy" style="background:#1a1a2e" style="height:200px">
+                        {% else %}
+                        <div class="poster-placeholder" style="height:200px">{{ m.title }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body-movie py-2">
+                        <h6 class="text-truncate mb-0" style="font-size:.85rem">{{ m.title }}</h6>
+                        <small class="text-muted">{{ m.release_date|date:"d M Y" }}</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

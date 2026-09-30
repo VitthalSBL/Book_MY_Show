@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Admin Analytics Dashboard</h3>
+        <div>
+            <a href="?period=daily" class="btn btn-sm btn-outline-primary">Daily</a>
+            <a href="?period=weekly" class="btn btn-sm btn-outline-primary">Weekly</a>
+            <a href="?period=monthly" class="btn btn-sm btn-outline-primary">Monthly</a>
+            <a href="?period=yearly" class="btn btn-sm btn-outline-primary">Yearly</a>
+            <a href="{% url 'dashboard:export_csv' %}" class="btn btn-sm btn-success">Export CSV</a>
+        </div>
+    </div>
+    <p class="text-muted">Period: {{ start }} to {{ end }}</p>
+    <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="card bg-primary text-white"><div class="card-body"><h6>Revenue (period)</h6><h3>₹{{ revenue_total|floatformat:0 }}</h3></div></div></div>
+        <div class="col-md-3"><div class="card bg-success text-white"><div class="card-body"><h6>Bookings (period)</h6><h3>{{ confirmed_count }}</h3></div></div></div>
+        <div class="col-md-3"><div class="card bg-info text-white"><div class="card-body"><h6>Occupancy</h6><h3>{{ occupancy_pct }}%</h3></div></div></div>
+        <div class="col-md-3"><div class="card bg-dark text-white"><div class="card-body"><h6>Total Users</h6><h3>{{ total_users }}</h3></div></div></div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="card"><div class="card-body"><h6>All-time Revenue</h6><h4>₹{{ total_revenue_all|floatformat:0 }}</h4></div></div></div>
+        <div class="col-md-3"><div class="card"><div class="card-body"><h6>All-time Bookings</h6><h4>{{ total_bookings }}</h4></div></div></div>
+        <div class="col-md-3"><div class="card"><div class="card-body"><h6>Cancellations</h6><h4>{{ cancelled }}</h4></div></div></div>
+        <div class="col-md-3"><div class="card"><div class="card-body"><h6>New Users (period)</h6><h4>{{ new_users }}</h4></div></div></div>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card"><div class="card-header">Top Movies by Revenue</div><div class="card-body p-0">
+                <table class="table table-sm mb-0"><thead><tr><th>Movie</th><th>Bookings</th><th>Revenue</th></tr></thead>
+                <tbody>{% for m in top_movies %}<tr><td>{{ m.show__movie__title }}</td><td>{{ m.bookings }}</td><td>₹{{ m.revenue|floatformat:0 }}</td></tr>{% empty %}<tr><td colspan="3">No data</td></tr>{% endfor %}</tbody></table>
+            </div></div>
+        </div>
+        <div class="col-md-6">
+            <div class="card"><div class="card-header">Top Theaters</div><div class="card-body p-0">
+                <table class="table table-sm mb-0"><thead><tr><th>Theater</th><th>City</th><th>Revenue</th></tr></thead>
+                <tbody>{% for t in top_theaters %}<tr><td>{{ t.show__screen__theater__name }}</td><td>{{ t.show__screen__theater__city__name }}</td><td>₹{{ t.revenue|floatformat:0 }}</td></tr>{% empty %}<tr><td colspan="3">No data</td></tr>{% endfor %}</tbody></table>
+            </div></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

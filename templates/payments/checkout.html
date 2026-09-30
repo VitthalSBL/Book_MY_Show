@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Payment — {{ booking.booking_id }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card auth-card">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-shield-lock-fill text-danger" style="font-size:2.5rem"></i>
+                        <h4 class="fw-bold mt-2">Complete Payment</h4>
+                        <p class="text-muted small">Booking <strong>{{ booking.booking_id }}</strong></p>
+                    </div>
+                    <div class="bg-light rounded-3 p-3 mb-4">
+                        <div class="fw-semibold">{{ booking.show.movie.title }}</div>
+                        <div class="small text-muted mt-1">{{ booking.show.datetime_display }}</div>
+                        <div class="small text-muted">{{ booking.show.screen.theater.name }} · {{ booking.show.screen.name }}</div>
+                        <div class="small mt-1">Seats:
+                            {% for r in booking.seat_reservations.all %}{{ r.seat.seat_label }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                        </div>
+                    </div>
+                    <div class="text-center mb-4">
+                        <div class="text-muted small">Amount to pay</div>
+                        <div class="fw-bold text-danger" style="font-size:2rem">₹{{ booking.total_amount }}</div>
+                    </div>
+                    {% if payment.razorpay_order_id|slice:":10" == "order_demo" %}
+                    <div class="alert alert-info small py-2">Demo mode — no real charge. Click below to confirm.</div>
+                    <form method="post" action="{% url 'payments:callback' %}">{% csrf_token %}
+                        <input type="hidden" name="razorpay_order_id" value="{{ payment.razorpay_order_id }}">
+                        <input type="hidden" name="razorpay_payment_id" value="demo_pay_{{ booking.booking_id }}">
+                        <input type="hidden" name="razorpay_signature" value="demo_sig">
+                        <input type="hidden" name="booking_id" value="{{ booking.booking_id }}">
+                        <button type="submit" class="btn btn-bms w-100 py-2 btn-lg">
+                            <i class="bi bi-check-circle me-1"></i> Pay ₹{{ booking.total_amount }}
+                        </button>
+                    </form>
+                    {% else %}
+                    <button id="rzp-button" class="btn btn-bms w-100 py-2 btn-lg">
+                        <i class="bi bi-credit-card me-1"></i> Pay with Razorpay
+                    </button>
+                    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+                    <script>
+                    document.getElementById('rzp-button').onclick = function(e){
+                        e.preventDefault();
+                        var options = {
+                            key: '{{ razorpay_key_id }}', amount: {{ amount_paise }}, currency: 'INR',
+                            name: 'BookMyShow Clone', description: '{{ booking.show.movie.title }}',
+                            order_id: '{{ payment.razorpay_order_id }}',
+                            handler: function(response){
+                                var form = document.createElement('form');
+                                form.method = 'POST'; form.action = '{% url "payments:callback" %}';
+                                form.innerHTML = '{% csrf_token %}' +
+                                    '<input name="razorpay_order_id" value="'+response.razorpay_order_id+'">' +
+                                    '<input name="razorpay_payment_id" value="'+response.razorpay_payment_id+'">' +
+                                    '<input name="razorpay_signature" value="'+response.razorpay_signature+'">' +
+                                    '<input name="booking_id" value="{{ booking.booking_id }}">';
+                                document.body.appendChild(form); form.submit();
+                            },
+                            theme: {color: '#f84464'}
+                        };
+                        new Razorpay(options).open();
+                    };
+                    </script>
+                    {% endif %}
+                    <p class="text-muted small text-center mt-3 mb-0">
+                        <i class="bi bi-clock-history me-1"></i> Seats held for 2 minutes
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
